@@ -803,7 +803,7 @@ const ZOOMS = [.1, .15, .25, .33, .5, .67, .75, 1, 1.25, 1.5, 2, 3, 4];
 let viewMode = "fit", viewScale = 1;
 const fitScale = () => {
   const st = document.getElementById("stage");
-  const pad = 48;
+  const pad = 64; // room around the canvas so its shadow is not clipped
   return Math.max(.05, Math.min(1, (st.clientWidth - pad) / width, (st.clientHeight - pad) / height));
 };
 function applyView() {

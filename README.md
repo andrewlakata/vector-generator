@@ -1,4 +1,4 @@
-# Vector Generator
+# Vector Collision Generator
 
 A small static web app for generating ray-and-circle graphics with p5.js.
 
@@ -18,6 +18,8 @@ It's plain static files, so any static host works:
 
 ## Using it
 - **Regenerate** – new seed, plus random vector count (20–100), circle count (10–25), vector style and collision mode.
+- **Share** – copies a link (or opens the share menu) that recreates the current image via `?p=<preset code>`.
 - **Save Image** – downloads a PNG.
 - **Copy SVG** – copies a clean vector version (clipped to the canvas; film grain not included).
+- **Randomize Colors** – picks a new coordinated color palette (Color section).
 - **Preset Code** – one string holding the seed and every setting. Copy it to save a look; paste it and press Enter to restore it.

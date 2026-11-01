@@ -151,7 +151,7 @@
   /* Stage */
   .stage-wrap { position: relative; min-width: 0; min-height: 0; }
   #stage { position: absolute; inset: 0; overflow: auto; display: flex; align-items: safe center; justify-content: safe center; }
-  #stage canvas { display: block; flex: none; }
+  #stage canvas { display: block; flex: none; box-shadow: 0 6px 16px rgba(0,0,0,.35), 0 2px 4px rgba(0,0,0,.3); } /* medium elevation */
   .zoombar {
     position: absolute; right: 14px; bottom: 14px; display: flex; align-items: center; gap: 2px;
     background: rgba(20,20,20,.85); border: 1px solid #333; border-radius: 4px; padding: 3px; color: #eee;
