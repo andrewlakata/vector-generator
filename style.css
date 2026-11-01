@@ -24,7 +24,7 @@
   .sec:last-child { border-bottom: 0; }
   .sec-title { font-size: 11px; font-weight: 500; color: var(--ink); }
   .field { display: grid; gap: 3px; min-width: 0; }
-  .field > label, .field > .lab { font-weight: 400; font-size: 11px; }
+  .field > label, .field > .lab { font-weight: 400; font-size: 11px; color: #555555; }
   .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 10px; }
   .input, .select {
     width: 100%; box-sizing: border-box; height: 28px; font: inherit; font-size: 13px; line-height: 26px; color: var(--ink);
@@ -41,6 +41,30 @@
   .dims { display: flex; align-items: center; gap: 8px; }
   .dims span { color: var(--ink-soft); }
   .dims .input { flex: 1; min-width: 0; }
+  .dims .num-wrap { flex: 1; }
+
+  /* Number steppers. Hide native spinners in every engine, then draw our own. */
+  .input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+  .input[type=number]::-webkit-inner-spin-button,
+  .input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; appearance: none; margin: 0; }
+  .num-wrap { position: relative; min-width: 0; }
+  .num-wrap .input { display: block; padding-right: 27px; } /* block: no inline baseline gap, so the stepper lines up exactly */
+  .stepper {
+    position: absolute; top: 1px; right: 1px; bottom: 1px; width: 18px;
+    display: flex; flex-direction: column; overflow: hidden;
+    border-left: 1px solid var(--field-line); border-radius: 0 2px 2px 0; background: #fff;
+  }
+  .step-btn {
+    flex: 1 1 0; min-height: 0; margin: 0; padding: 0; border: 0; border-radius: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: transparent; color: var(--ink-soft); cursor: pointer; font: inherit; line-height: 0;
+    -webkit-appearance: none; appearance: none; touch-action: manipulation; -webkit-user-select: none; user-select: none;
+  }
+  .step-btn::-moz-focus-inner { border: 0; padding: 0; }
+  .step-btn + .step-btn { border-top: 1px solid var(--field-line); }
+  .step-btn:hover { background: #f3f3f3; color: var(--ink); }
+  .step-btn:active { background: #e9e9e9; }
+  .step-btn svg { display: block; width: 10px; height: 10px; pointer-events: none; }
   .input.code { text-align: left; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 11px; text-overflow: ellipsis; }
   .input.code.bad { border-color: #c62828; box-shadow: 0 0 0 1px #c62828; }
   .btn.mini { height: 28px; padding: 0 10px; font-size: 12px; flex: none; }
@@ -96,7 +120,7 @@
   .cp-inputs .pct { align-self: center; color: #999; padding-right: 7px; }
   .cp-mode:focus-visible, .cp-eye:focus-visible { outline: 1px solid #0d99ff; }
   .color-wrap .input { padding-left: 28px; text-transform: uppercase; }
-  .toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-weight: 400; font-size: 11px; cursor: pointer; }
+  .toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-weight: 400; font-size: 11px; color: #555555; cursor: pointer; }
   .toggle input { appearance: none; -webkit-appearance: none; flex: none; width: 34px; height: 20px; margin: 0; border-radius: 10px; background: var(--field-line); position: relative; cursor: pointer; transition: background .15s; }
   .toggle input::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: transform .15s; box-shadow: 0 1px 2px rgba(0,0,0,.25); }
   .toggle input:checked { background: var(--ink); }

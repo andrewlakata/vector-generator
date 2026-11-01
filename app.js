@@ -70,6 +70,32 @@ const SECTIONS = [
 const el = (t, props = {}, kids = []) => { const n = Object.assign(document.createElement(t), props); kids.forEach(k => n.append(k)); return n; };
 const refresh = {}; // id -> fn that pushes current value into the UI
 
+// Number fields get a custom stepper: full-height up/down buttons on the right, always visible.
+// Native spinners are hidden in CSS (they look and size differently in Chrome, Safari and Firefox).
+const CHEV_UP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>';
+const CHEV_DOWN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+function withStepper(inp, step) {
+  const dec = (String(step).split(".")[1] || "").length;
+  const nudge = dir => {
+    const min = parseFloat(inp.min), max = parseFloat(inp.max);
+    let v = parseFloat(inp.value); if (isNaN(v)) v = isNaN(min) ? 0 : min;
+    v = +(v + dir * step).toFixed(dec);
+    if (!isNaN(min)) v = Math.max(min, v); if (!isNaN(max)) v = Math.min(max, v);
+    inp.value = v;
+    inp.dispatchEvent(new Event("input", { bubbles: true })); inp.dispatchEvent(new Event("change", { bubbles: true }));
+  };
+  const mk = (dir, label, svg) => {
+    const b = el("button", { type: "button", className: "step-btn", tabIndex: -1, innerHTML: svg }); b.setAttribute("aria-label", label);
+    let t1 = null, t2 = null; const stop = () => { clearTimeout(t1); clearInterval(t2); t1 = t2 = null; };
+    // Press once to step; hold to keep stepping.
+    b.addEventListener("pointerdown", e => { if (e.button !== 0) return; e.preventDefault(); nudge(dir); stop(); t1 = setTimeout(() => { t2 = setInterval(() => nudge(dir), 60); }, 400); });
+    ["pointerup", "pointerleave", "pointercancel"].forEach(ev => b.addEventListener(ev, stop));
+    b.addEventListener("contextmenu", e => e.preventDefault());
+    return b;
+  };
+  const label = inp.getAttribute("aria-label") || "";
+  return el("div", { className: "num-wrap" }, [inp, el("div", { className: "stepper" }, [mk(1, ("Increase " + label).trim(), CHEV_UP), mk(-1, ("Decrease " + label).trim(), CHEV_DOWN)])]);
+}
 function numberField(c) {
   const id = "f-" + c.id;
   const inp = el("input", { className: "input num", type: "number", id, min: c.min, max: c.max, step: c.step, inputMode: "decimal" });
@@ -77,7 +103,8 @@ function numberField(c) {
   inp.addEventListener("input", () => { const v = parseFloat(inp.value); if (!isNaN(v)) setVal(c.id, clamp(v)); });
   inp.addEventListener("change", () => { const v = parseFloat(inp.value); inp.value = isNaN(v) ? window._VALUES[c.id] : clamp(v); setVal(c.id, +inp.value); });
   refresh[c.id] = () => inp.value = window._VALUES[c.id];
-  return el("div", { className: "field" }, [el("label", { htmlFor: id, textContent: c.label }), inp]);
+  inp.setAttribute("aria-label", c.label);
+  return el("div", { className: "field" }, [el("label", { htmlFor: id, textContent: c.label }), withStepper(inp, c.step || 1)]);
 }
 function selectField(c) {
   const id = "f-" + c.id;
@@ -228,7 +255,7 @@ function dimsField(c) {
   [wI, hI].forEach(i => { i.addEventListener("change", apply); i.addEventListener("keydown", e => e.key === "Enter" && apply()); });
   refresh.canvasSize = () => { wI.value = window._VALUES.canvasSize.width; hI.value = window._VALUES.canvasSize.height; };
   return el("div", { className: "field" }, [el("div", { className: "lab", textContent: c.label }),
-    el("div", { className: "dims" }, [el("span", { textContent: "W" }), wI, el("span", { textContent: "H" }), hI])]);
+    el("div", { className: "dims" }, [el("span", { textContent: "W" }), withStepper(wI, 1), el("span", { textContent: "H" }), withStepper(hI, 1)])]);
 }
 // ---------- Preset code: one string holding the seed and every setting (colors included) ----------
 // Format: "1_" + seed + "_" + each setting in CODE_KEYS order, joined by "_".
@@ -279,10 +306,8 @@ function seedField(c) {
   s.addEventListener("focus", () => s.select());
   s.addEventListener("input", () => s.classList.toggle("bad", !decodeCode(s.value)));
   s.addEventListener("change", () => {
-    const r = decodeCode(s.value);
-    if (!r) { s.classList.remove("bad"); s.value = encodeCode(); return; }
-    Object.assign(window._VALUES, r.vals); window._SEED = r.seed;
-    refreshAll(); if (window._p5ready) window.draw();
+    if (!applyCode(s.value)) { s.classList.remove("bad"); s.value = encodeCode(); return; }
+    writeURL(true);
   });
   s.addEventListener("keydown", e => { if (e.key === "Enter") s.blur(); if (e.key === "Escape") { s.value = encodeCode(); s.classList.remove("bad"); s.blur(); } });
   copy.onclick = async () => {
@@ -333,8 +358,8 @@ function buildNode(item) {
   const regen = iconBtn("regen", "", "Regenerate", ICONS.regen);
   const save = iconBtn("save", "primary", "Save image", ICONS.save);
   const svgBtn = iconBtn("copySvg", "", "Copy SVG", ICONS.copy);
-  side.prepend(el("section", { className: "sec side-actions" }, [el("div", { className: "actions three" }, [regen, save, svgBtn])]));
-  regen.onclick = () => { randomizeLook(); applySeed(Math.floor(Math.random() * 2 ** 52)); };
+  side.prepend(el("section", { className: "sec side-actions" }, [el("div", { className: "actions three" }, [["Regenerate", regen], ["Save Image", save], ["Copy SVG", svgBtn]].map(([t, btn]) => el("div", { className: "field" }, [el("div", { className: "lab", textContent: t }), btn])))]));
+  regen.onclick = () => { randomizeLook(); applySeed(Math.floor(Math.random() * 2 ** 52)); writeURL(true); };
   save.onclick = openSave; svgBtn.onclick = copySVG;
 })();
 const refreshAll = () => Object.values(refresh).forEach(f => f());
@@ -350,10 +375,29 @@ function randomizeLook() {
   window._VALUES.intersectionBounceRenderingMode = pickVisible("intersectionBounceRenderingMode");
   ["numRays", "numCircles", "rayDrawingStyle", "intersectionBounceRenderingMode"].forEach(k => refresh[k] && refresh[k]());
 }
+// ---------- Preset code in the URL (?p=CODE) ----------
+// Every Regenerate adds a history entry, so Back/Forward step through earlier images.
+// Opening a link with ?p= restores that exact image instead of a random one.
+function applyCode(str) {
+  const r = decodeCode(str); if (!r) return false;
+  Object.assign(window._VALUES, r.vals); window._SEED = r.seed;
+  refreshAll(); if (window._p5ready) window.draw();
+  return true;
+}
+function codeFromURL() { try { return new URLSearchParams(location.search).get("p"); } catch (e) { return null; } }
+function writeURL(push) {
+  try {
+    const u = new URL(location.href); u.searchParams.set("p", encodeCode());
+    if (u.href !== location.href) history[push ? "pushState" : "replaceState"](null, "", u);
+  } catch (e) { /* some embedded previews don't allow changing the URL */ }
+}
+window.addEventListener("popstate", () => { const c = codeFromURL(); if (c) applyCode(c); });
+
 randomizeLook();
 window._SEED = Math.floor(Math.random() * 2 ** 52);
 function applySeed(s) { window._SEED = s; refresh._seed && refresh._seed(); if (window._p5ready) window.draw(); }
 refreshAll();
+{ const c = codeFromURL(); if (!(c && applyCode(c))) writeURL(false); }
 
 // ---------- Modal (used when the clipboard is blocked) ----------
 const modal = document.getElementById("modal"), card = document.getElementById("modalCard");
