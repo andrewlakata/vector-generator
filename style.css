@@ -127,7 +127,7 @@
   .toggle input:checked::after { transform: translateX(14px); }
   .toggle input:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
   .btn {
-    height: 32px; font: inherit; font-weight: 600; font-size: 13px; border-radius: 3px; cursor: pointer;
+    height: 32px; font: inherit; font-weight: 500; font-size: 13px; border-radius: 3px; cursor: pointer;
     border: 1px solid var(--field-line); background: #fff; color: var(--ink); display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   }
   .btn:hover { border-color: #aaa; }

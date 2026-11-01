@@ -57,6 +57,7 @@ const SECTIONS = [
       { id: "intColor", label: "Particle Color 1" }, { id: "intColor2", label: "Particle Color 2" } ] },
     { type: "toggle", id: "circleFillOn", label: "Fill Circles" },
     { type: "color", id: "circleFill", label: "Circle Fill", showIf: "circleFillOn" },
+    { type: "action", label: "Randomize Colors", icon: "shuffle", run: "randomizeColors" },
   ] },
   { title: "Film Grain", items: [
     { type: "toggle", id: "usefilmGrain", label: "Enable Film Grain" },
@@ -325,8 +326,15 @@ function build(item) {
   if (item.showIf) { conditional.push({ node, key: item.showIf }); node.hidden = !window._VALUES[item.showIf]; }
   return node;
 }
+const ACTION_ICONS = { shuffle: '<path d="m18 14 4 4-4 4"/><path d="m18 2 4 4-4 4"/><path d="M2 18h1.97a4 4 0 0 0 3.3-1.7l5.46-7.6a4 4 0 0 1 3.3-1.7H22"/><path d="M2 6h1.97a4 4 0 0 1 3.6 2.2"/><path d="M22 18h-6.04a4 4 0 0 1-3.3-1.8l-.36-.45"/>' };
+const ACTIONS = { randomizeColors: () => randomizeColors() };
 function buildNode(item) {
   switch (item.type) {
+    case "action": {
+      const b = el("button", { type: "button", className: "btn icon", innerHTML: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ACTION_ICONS[item.icon] || ""}</svg><span>${item.label}</span>` });
+      b.addEventListener("click", ACTIONS[item.run]);
+      return b;
+    }
     case "color": return colorField(item);
     case "number": return numberField(item);
     case "select": return selectField(item);
@@ -375,6 +383,30 @@ function randomizeLook() {
   window._VALUES.intersectionBounceRenderingMode = pickVisible("intersectionBounceRenderingMode");
   ["numRays", "numCircles", "rayDrawingStyle", "intersectionBounceRenderingMode"].forEach(k => refresh[k] && refresh[k]());
 }
+// ---------- Random color palette ----------
+// Builds a coordinated palette around one random hue: mostly dark backgrounds (70%), sometimes light,
+// with a contrasting vector color, a quieter circle stroke, and accent particles from an offset hue.
+// Circle Fill is set too (used when Fill Circles is on). Min Opacity and the on/off settings are left alone.
+function hslHex(h, s, l) {
+  h = ((h % 360) + 360) % 360; s /= 100; l /= 100;
+  const f = n => { const k = (n + h / 30) % 12, a = s * Math.min(l, 1 - l); return Math.round(255 * (l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1)))); };
+  return "#" + [f(0), f(8), f(4)].map(v => v.toString(16).padStart(2, "0")).join("").toUpperCase();
+}
+function randomizeColors() {
+  const R = (a, b) => a + Math.random() * (b - a), pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  const h = Math.random() * 360, dark = Math.random() < 0.7, accent = h + pick([180, 150, 210, 120, 240, 30]);
+  const vec = dark ? hslHex(h + R(-30, 30), R(20, 90), R(75, 95)) : hslHex(h + R(-30, 30), R(40, 90), R(12, 30));
+  Object.assign(window._VALUES, {
+    bgColor: dark ? hslHex(h, R(10, 40), R(3, 10)) : hslHex(h, R(10, 35), R(92, 97)),
+    rayMaxColor: vec,
+    circleStroke: dark ? hslHex(h + R(-20, 20), R(10, 40), R(28, 45)) : hslHex(h + R(-20, 20), R(10, 40), R(55, 72)),
+    intColor: hslHex(accent, R(70, 100), dark ? R(55, 75) : R(35, 55)),
+    intColor2: Math.random() < 0.5 ? hslHex(accent + R(20, 60), R(70, 100), dark ? R(60, 85) : R(30, 50)) : vec,
+    circleFill: dark ? hslHex(h, R(15, 45), R(6, 16)) : hslHex(h, R(15, 40), R(85, 93)),
+  });
+  refreshAll(); window._FORCEQUICKDRAW && window._FORCEQUICKDRAW();
+}
+
 // ---------- Preset code in the URL (?p=CODE) ----------
 // Every Regenerate adds a history entry, so Back/Forward step through earlier images.
 // The address bar stays clean while you work. Share builds a link with ?p=CODE;
