@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vector Generator</title>
+  <meta name="description" content="Generative ray-and-circle graphics with seeded presets, PNG and SVG export.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.min.js"></script>
+</head>
+<body>
+<div class="app">
+  <aside class="side" id="side"></aside>
+  <div class="stage-wrap">
+    <div id="stage"></div>
+    <div class="zoombar" role="group" aria-label="Preview zoom">
+      <button id="zoomOut" aria-label="Zoom out">&minus;</button>
+      <span id="zoomPct">100%</span>
+      <button id="zoomIn" aria-label="Zoom in">+</button>
+      <button id="zoomFit" aria-pressed="true">Fit</button>
+      <button id="zoom100">1:1</button>
+    </div>
+  </div>
+</div>
+<div class="modal" id="modal" hidden><div class="modal-card" id="modalCard"></div></div>
+
+<script src="app.js"></script>
+</body>
+</html>
