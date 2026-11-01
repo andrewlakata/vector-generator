@@ -5,7 +5,7 @@ const DEFAULTS = {
   usefilmGrain: false, numCircles: 10, minCircleRadiusPx: 27, maxCircleRadiusPx: 54,
   rayOriginType: "center", numRayOrigins: 1, numRays: 60, viewZoom: 1, viewX: .5, viewY: .5,
   rayAngleEccentricityPct: 0, rayOriginEccentricityPct: 5, useCollisionDetectionOnElements: false, intSlippagePct: 0,
-  bgColor: "#000000", rayMaxColor: "#FFFFFF", rayMinOpacity: 50, circleStroke: "#555555",
+  bgColor: "#000000", rayMaxColor: "#FFFFFF", rayMinOpacity: 25, circleStroke: "#555555",
   circleFillOn: false, circleFill: "#000000", intColor: "#FFFFFF", intColor2: "#FFFFFF",
   intersectionBounceRenderingMode: "point", intersectionSlipThroughRenderingMode: "point",
   intersectionSplatterSpread: 30, intersectionSplatterAmount: 2000, rayDrawingStyle: "solid",
@@ -490,7 +490,7 @@ function render({ circles, rays, rayOrigins, intersections }, quick = false) {
   const sc = circles.map(c => ({ ...toScreen(c.x, c.y, z, vx, vy), r: c.r * m * z, ID: c.ID }));
   const ints = intersections.map(i => ({ ...toScreen(i.x, i.y, z, vx, vy), originCircle: circles.find(c => c.ID === i.originID) }));
   const cStroke = w("circleStroke"), cFill = w("circleFill"), rMax = w("rayMaxColor"), rMaxA = alpha(color(rMax)) / 255;
-  const minA = constrain(window._VALUES.rayMinOpacity ?? 50, 0, 100) / 100 * 255;
+  const minA = constrain(window._VALUES.rayMinOpacity ?? 25, 0, 100) / 100 * 255;
   const i1 = w("intColor"), i2 = w("intColor2"), spread = w("intersectionSplatterSpread"), amount = w("intersectionSplatterAmount");
   const intCols = [i1, i2];
   const fillC = color(cFill); fillC.setAlpha(alpha(fillC) * 200 / 255); // fill stays slightly see-through, scaled by the color's own opacity
