@@ -21,7 +21,7 @@ const randomVectorCount = () => 20 + Math.floor(Math.random() * 81);
 window._VALUES.numRays = randomVectorCount();
 const MODES = [["splatter-in", "Splatter In"], ["splatter-out", "Splatter Out"], ["point", "Points"], ["none", "None"]];
 const SECTIONS = [
-  { items: [{ type: "dims", label: "Canvas Dimensions" }, { type: "seed", label: "Preset Code" }] },
+  { title: "Setup", items: [{ type: "seed", label: "Preset Code" }, { type: "dims", label: "Canvas Dimensions" }] },
   { title: "Color", items: [
     { type: "colors", items: [
       { id: "rayMaxColor", label: "Vector Color" }, { type: "number", id: "rayMinOpacity", label: "Min Opacity (%)", min: 0, max: 100, step: 1 },
