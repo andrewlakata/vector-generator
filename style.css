@@ -22,6 +22,7 @@
   .side { background: var(--side); border-right: 1px solid var(--rule); overflow-y: auto; display: flex; flex-direction: column; min-height: 0; }
   .sec { padding: 16px 20px; border-bottom: 1px solid var(--rule); display: grid; gap: 10px; }
   .sec:last-child { border-bottom: 0; }
+  .side::after { content: ""; flex: none; min-height: 48px; } /* breathing room below the last section */
   .sec-title { font-size: 11px; font-weight: 500; color: var(--ink); }
   .field { display: grid; gap: 3px; min-width: 0; }
   .field > label, .field > .lab { font-weight: 400; font-size: 11px; color: #555555; }
@@ -137,9 +138,10 @@
   .btn.ghost { font-weight: 500; color: var(--ink-soft); }
   .btn svg { width: 14px; height: 14px; }
   .actions { display: grid; gap: 8px; }
-  .actions.three { grid-template-columns: repeat(3, 1fr); }
-  .btn.icon { padding: 0; }
-  .btn.icon svg { width: 16px; height: 16px; }
+  .actions.two { grid-template-columns: repeat(2, 1fr); }
+  /* Action buttons: text on the left, icon on the right (markup is icon then text, so reverse the row). */
+  .btn.icon { height: 28px; padding: 0 6px 0 10px; gap: 7px; white-space: nowrap; font-size: 12px; flex-direction: row-reverse; justify-content: space-between; }
+  .btn.icon svg { width: 12px; height: 12px; flex: none; }
   .tip {
     position: fixed; z-index: 40; transform: translateX(-50%); pointer-events: none; white-space: nowrap;
     background: rgba(20,20,20,.85); border: 1px solid #333; border-radius: 4px; color: #eee; font-size: 11px; padding: 4px 8px;

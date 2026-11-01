@@ -306,8 +306,7 @@ function seedField(c) {
   s.addEventListener("focus", () => s.select());
   s.addEventListener("input", () => s.classList.toggle("bad", !decodeCode(s.value)));
   s.addEventListener("change", () => {
-    if (!applyCode(s.value)) { s.classList.remove("bad"); s.value = encodeCode(); return; }
-    writeURL(true);
+    if (!applyCode(s.value)) { s.classList.remove("bad"); s.value = encodeCode(); }
   });
   s.addEventListener("keydown", e => { if (e.key === "Enter") s.blur(); if (e.key === "Escape") { s.value = encodeCode(); s.classList.remove("bad"); s.blur(); } });
   copy.onclick = async () => {
@@ -350,17 +349,18 @@ function buildNode(item) {
     regen: '<path d="m18 14 4 4-4 4"/><path d="m18 2 4 4-4 4"/><path d="M2 18h1.97a4 4 0 0 0 3.3-1.7l5.46-7.6a4 4 0 0 1 3.3-1.7H22"/><path d="M2 6h1.97a4 4 0 0 1 3.6 2.2"/><path d="M22 18h-6.04a4 4 0 0 1-3.3-1.8l-.36-.45"/>',
     save: '<path d="M5 3h11l5 5v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M7 3v5h8V3"/><rect x="7" y="13" width="10" height="8" rx="1"/>',
     copy: '<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
+    share: '<path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="m16 6-4-4-4 4"/><path d="M12 2v13"/>',
   };
   const iconBtn = (id, cls, label, icon) => {
-    const b = el("button", { className: "btn icon " + cls, id, type: "button", title: label, innerHTML: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icon}</svg>` });
-    b.setAttribute("aria-label", label); return b;
+    return el("button", { className: "btn icon " + cls, id, type: "button", innerHTML: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icon}</svg><span>${label}</span>` });
   };
-  const regen = iconBtn("regen", "", "Regenerate", ICONS.regen);
-  const save = iconBtn("save", "primary", "Save image", ICONS.save);
+  const regen = iconBtn("regen", "primary", "Regenerate", ICONS.regen);
+  const save = iconBtn("save", "", "Save Image", ICONS.save);
   const svgBtn = iconBtn("copySvg", "", "Copy SVG", ICONS.copy);
-  side.prepend(el("section", { className: "sec side-actions" }, [el("div", { className: "actions three" }, [["Regenerate", regen], ["Save Image", save], ["Copy SVG", svgBtn]].map(([t, btn]) => el("div", { className: "field" }, [el("div", { className: "lab", textContent: t }), btn])))]));
-  regen.onclick = () => { randomizeLook(); applySeed(Math.floor(Math.random() * 2 ** 52)); writeURL(true); };
-  save.onclick = openSave; svgBtn.onclick = copySVG;
+  const shareBtn = iconBtn("share", "", "Share", ICONS.share);
+  side.prepend(el("section", { className: "sec side-actions" }, [el("div", { className: "actions two" }, [regen, shareBtn, svgBtn, save])]));
+  regen.onclick = () => { randomizeLook(); applySeed(Math.floor(Math.random() * 2 ** 52)); clearURL(); };
+  save.onclick = openSave; svgBtn.onclick = copySVG; shareBtn.onclick = () => shareLink(shareBtn);
 })();
 const refreshAll = () => Object.values(refresh).forEach(f => f());
 
@@ -377,7 +377,8 @@ function randomizeLook() {
 }
 // ---------- Preset code in the URL (?p=CODE) ----------
 // Every Regenerate adds a history entry, so Back/Forward step through earlier images.
-// Opening a link with ?p= restores that exact image instead of a random one.
+// The address bar stays clean while you work. Share builds a link with ?p=CODE;
+// opening such a link restores that exact image, and Regenerate clears ?p= from the address bar again.
 function applyCode(str) {
   const r = decodeCode(str); if (!r) return false;
   Object.assign(window._VALUES, r.vals); window._SEED = r.seed;
@@ -385,19 +386,33 @@ function applyCode(str) {
   return true;
 }
 function codeFromURL() { try { return new URLSearchParams(location.search).get("p"); } catch (e) { return null; } }
-function writeURL(push) {
-  try {
-    const u = new URL(location.href); u.searchParams.set("p", encodeCode());
-    if (u.href !== location.href) history[push ? "pushState" : "replaceState"](null, "", u);
-  } catch (e) { /* some embedded previews don't allow changing the URL */ }
+function shareURL() { const u = new URL(location.href); u.hash = ""; u.search = ""; u.searchParams.set("p", encodeCode()); return u.href; }
+function clearURL() {
+  try { if (location.search) { const u = new URL(location.href); u.searchParams.delete("p"); history.replaceState(null, "", u); } }
+  catch (e) { /* some embedded previews don't allow changing the URL */ }
 }
-window.addEventListener("popstate", () => { const c = codeFromURL(); if (c) applyCode(c); });
+async function shareLink(btn) {
+  const url = shareURL();
+  // Use the system share sheet where there is one (phones, Safari, some desktop browsers); otherwise copy the link.
+  if (navigator.share) {
+    try { await navigator.share({ title: document.title, url }); return; }
+    catch (e) { if (e && e.name === "AbortError") return; }
+  }
+  try { await navigator.clipboard.writeText(url); showTip(btn, "Link copied to clipboard"); }
+  catch (e) {
+    const ta = el("textarea", { value: url, readOnly: true, ariaLabel: "Share link" });
+    card.replaceChildren(el("h2", { textContent: "Share link" }),
+      el("p", { textContent: "Copy this link to share this exact image. It is selected below — press Ctrl/Cmd+C." }),
+      ta, el("div", { className: "modal-row" }, [closeBtn("Done")]));
+    ta.style.minHeight = "90px"; modal.hidden = false; ta.focus(); ta.select();
+  }
+}
 
 randomizeLook();
 window._SEED = Math.floor(Math.random() * 2 ** 52);
 function applySeed(s) { window._SEED = s; refresh._seed && refresh._seed(); if (window._p5ready) window.draw(); }
 refreshAll();
-{ const c = codeFromURL(); if (!(c && applyCode(c))) writeURL(false); }
+{ const c = codeFromURL(); if (c) applyCode(c); }
 
 // ---------- Modal (used when the clipboard is blocked) ----------
 const modal = document.getElementById("modal"), card = document.getElementById("modalCard");
