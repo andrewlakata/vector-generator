@@ -22,6 +22,15 @@ window._VALUES.numRays = randomVectorCount();
 const MODES = [["splatter-in", "Splatter In"], ["splatter-out", "Splatter Out"], ["point", "Points"], ["none", "None"]];
 const SECTIONS = [
   { items: [{ type: "dims", label: "Canvas Dimensions" }, { type: "seed", label: "Preset Code" }] },
+  { title: "Color", items: [
+    { type: "colors", items: [
+      { id: "rayMaxColor", label: "Vector Color" }, { type: "number", id: "rayMinOpacity", label: "Min Opacity (%)", min: 0, max: 100, step: 1 },
+      { id: "bgColor", label: "Background Color", alpha: false }, { id: "circleStroke", label: "Circle Stroke" },
+      { id: "intColor", label: "Particle Color 1" }, { id: "intColor2", label: "Particle Color 2" } ] },
+    { type: "toggle", id: "circleFillOn", label: "Fill Circles" },
+    { type: "color", id: "circleFill", label: "Circle Fill", showIf: "circleFillOn" },
+    { type: "action", label: "Randomize Colors", icon: "shuffle", run: "randomizeColors" },
+  ] },
   { title: "Rays", items: [
     { type: "select", id: "rayOriginType", label: "Ray Origin", options: [["random", "Random"], ["center", "Center"]] },
     { type: "pair", items: [
@@ -49,15 +58,6 @@ const SECTIONS = [
     { type: "pair", items: [
       { type: "number", id: "intersectionSplatterSpread", label: "Particle Spread", min: 1, max: 50, step: 1 },
       { type: "number", id: "intersectionSplatterAmount", label: "Particle Amount", min: 0, max: 3000, step: 10 } ] },
-  ] },
-  { title: "Color", items: [
-    { type: "colors", items: [
-      { id: "rayMaxColor", label: "Vector Color" }, { type: "number", id: "rayMinOpacity", label: "Min Opacity (%)", min: 0, max: 100, step: 1 },
-      { id: "bgColor", label: "Background Color", alpha: false }, { id: "circleStroke", label: "Circle Stroke" },
-      { id: "intColor", label: "Particle Color 1" }, { id: "intColor2", label: "Particle Color 2" } ] },
-    { type: "toggle", id: "circleFillOn", label: "Fill Circles" },
-    { type: "color", id: "circleFill", label: "Circle Fill", showIf: "circleFillOn" },
-    { type: "action", label: "Randomize Colors", icon: "shuffle", run: "randomizeColors" },
   ] },
   { title: "Film Grain", items: [
     { type: "toggle", id: "usefilmGrain", label: "Enable Film Grain" },
