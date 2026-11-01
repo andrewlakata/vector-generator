@@ -21,7 +21,6 @@
   /* Sidebar */
   .side { background: var(--side); border-right: 1px solid var(--rule); overflow-y: auto; display: flex; flex-direction: column; min-height: 0; }
   .sec { padding: 16px 20px; border-bottom: 1px solid var(--rule); display: grid; gap: 10px; }
-  .sec:last-child { border-bottom: 0; }
   .side::after { content: ""; flex: none; min-height: 48px; } /* breathing room below the last section */
   .sec-title { font-size: 11px; font-weight: 500; color: var(--ink); }
   .field { display: grid; gap: 3px; min-width: 0; }
