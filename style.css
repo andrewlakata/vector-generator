@@ -141,6 +141,7 @@
   /* Action buttons: text on the left, icon on the right (markup is icon then text, so reverse the row). */
   .btn.icon { height: 28px; padding: 0 6px 0 10px; gap: 7px; white-space: nowrap; font-size: 12px; flex-direction: row-reverse; justify-content: space-between; }
   .btn.icon svg { width: 12px; height: 12px; flex: none; }
+  .btn.icon.share { flex: none; }
   .tip {
     position: fixed; z-index: 40; transform: translateX(-50%); pointer-events: none; white-space: nowrap;
     background: rgba(20,20,20,.85); border: 1px solid #333; border-radius: 4px; color: #eee; font-size: 11px; padding: 4px 8px;

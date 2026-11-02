@@ -21,5 +21,5 @@ It's plain static files, so any static host works:
 - **Share** – copies a link (or opens the share menu) that recreates the current image via `?p=<preset code>`.
 - **Save Image** – downloads a PNG.
 - **Copy SVG** – copies a clean vector version (clipped to the canvas; film grain not included).
-- **Randomize Colors** – picks a new coordinated color palette (Color section).
+- **Recolor** – picks a new coordinated color palette.
 - **Preset Code** – one string holding the seed and every setting. Copy it to save a look; paste it and press Enter to restore it.

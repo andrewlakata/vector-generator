@@ -29,7 +29,6 @@ const SECTIONS = [
       { id: "intColor", label: "Particle Color 1" }, { id: "intColor2", label: "Particle Color 2" } ] },
     { type: "toggle", id: "circleFillOn", label: "Fill Circles" },
     { type: "color", id: "circleFill", label: "Circle Fill", showIf: "circleFillOn" },
-    { type: "action", label: "Randomize Colors", icon: "shuffle", run: "randomizeColors" },
   ] },
   { title: "Rays", items: [
     { type: "select", id: "rayOriginType", label: "Ray Origin", options: [["random", "Random"], ["center", "Center"]] },
@@ -303,19 +302,17 @@ function decodeCode(str) {
 }
 function seedField(c) {
   const s = el("input", { className: "input code", id: "f-code", spellcheck: false, autocomplete: "off", ariaLabel: c.label });
-  const copy = el("button", { className: "btn mini", type: "button", textContent: "Copy" });
+  const share = el("button", { className: "btn icon share", id: "share", type: "button", innerHTML: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="m16 6-4-4-4 4"/><path d="M12 2v13"/></svg><span>Share</span>' });
+  share.title = "Copy a link that recreates this image";
   s.addEventListener("focus", () => s.select());
   s.addEventListener("input", () => s.classList.toggle("bad", !decodeCode(s.value)));
   s.addEventListener("change", () => {
     if (!applyCode(s.value)) { s.classList.remove("bad"); s.value = encodeCode(); }
   });
   s.addEventListener("keydown", e => { if (e.key === "Enter") s.blur(); if (e.key === "Escape") { s.value = encodeCode(); s.classList.remove("bad"); s.blur(); } });
-  copy.onclick = async () => {
-    try { await navigator.clipboard.writeText(encodeCode()); copy.textContent = "Copied"; } catch (e) { s.focus(); s.select(); copy.textContent = "⌘C"; }
-    setTimeout(() => copy.textContent = "Copy", 1500);
-  };
+  share.onclick = () => shareLink(share);
   refresh._seed = () => { if (document.activeElement !== s) { s.value = encodeCode(); s.classList.remove("bad"); } };
-  return el("div", { className: "field" }, [el("label", { htmlFor: "f-code", textContent: c.label }), el("div", { className: "dims" }, [s, copy])]);
+  return el("div", { className: "field" }, [el("label", { htmlFor: "f-code", textContent: c.label }), el("div", { className: "dims" }, [s, share])]);
 }
 // Fields with showIf appear only while that on/off setting is on.
 const conditional = [];
@@ -358,6 +355,7 @@ function buildNode(item) {
     save: '<path d="M5 3h11l5 5v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M7 3v5h8V3"/><rect x="7" y="13" width="10" height="8" rx="1"/>',
     copy: '<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
     share: '<path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="m16 6-4-4-4 4"/><path d="M12 2v13"/>',
+    palette: '<circle cx="13.5" cy="6.5" r="1" fill="currentColor" stroke="none"/><circle cx="17.5" cy="10.5" r="1" fill="currentColor" stroke="none"/><circle cx="8.5" cy="7.5" r="1" fill="currentColor" stroke="none"/><circle cx="6.5" cy="12.5" r="1" fill="currentColor" stroke="none"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.93 0 1.65-.75 1.65-1.69 0-.44-.18-.84-.44-1.13-.29-.29-.44-.65-.44-1.12a1.64 1.64 0 0 1 1.67-1.67h2c3.05 0 5.55-2.5 5.55-5.55C21.97 6.01 17.46 2 12 2z"/>',
   };
   const iconBtn = (id, cls, label, icon) => {
     return el("button", { className: "btn icon " + cls, id, type: "button", innerHTML: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icon}</svg><span>${label}</span>` });
@@ -365,10 +363,10 @@ function buildNode(item) {
   const regen = iconBtn("regen", "primary", "Regenerate", ICONS.regen);
   const save = iconBtn("save", "", "Save Image", ICONS.save);
   const svgBtn = iconBtn("copySvg", "", "Copy SVG", ICONS.copy);
-  const shareBtn = iconBtn("share", "", "Share", ICONS.share);
-  side.prepend(el("section", { className: "sec side-actions" }, [el("div", { className: "actions two" }, [regen, shareBtn, svgBtn, save])]));
+  const recolor = iconBtn("recolor", "", "Recolor", ICONS.palette);
+  side.prepend(el("section", { className: "sec side-actions" }, [el("div", { className: "actions two" }, [regen, recolor, svgBtn, save])]));
   regen.onclick = () => { randomizeLook(); applySeed(Math.floor(Math.random() * 2 ** 52)); clearURL(); };
-  save.onclick = openSave; svgBtn.onclick = copySVG; shareBtn.onclick = () => shareLink(shareBtn);
+  save.onclick = openSave; svgBtn.onclick = copySVG; recolor.onclick = randomizeColors;
 })();
 const refreshAll = () => Object.values(refresh).forEach(f => f());
 
